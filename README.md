@@ -33,6 +33,11 @@ DockerUI listens on port 9000 by default. If you run DockerUI inside a container
     # Expose DockerUI on 10.20.30.1:80
     $ docker run -d -p 10.20.30.1:80:9000 --privileged -v /var/run/docker.sock:/var/run/docker.sock dockerui/dockerui
 
+### Start dockerui docker on system boot
+The best way to keep a docker to start on boot, will be specifying the name in docker run and with option for restart alwase.
+
+    $ sudo docker run -d --restart=always --name=mydockerui -p 9000:9000 --privileged -v /var/run/docker.sock:/var/run/docker.sock dockerui/dockerui
+
 ### Check the [wiki](//github.com/crosbymichael/dockerui/wiki) for more info about using dockerui
 
 ### Stack
