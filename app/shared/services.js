@@ -1,4 +1,4 @@
-angular.module('dockerui.services', ['ngResource'])
+angular.module('dockerui.services', ['ngResource', 'ngSanitize'])
     .factory('Container', ['$resource', 'Settings', function ContainerFactory($resource, Settings) {
         'use strict';
         // Resource for interacting with the docker containers
@@ -31,8 +31,10 @@ angular.module('dockerui.services', ['ngResource'])
                     url: Settings.url + '/commit',
                     params: {
                         'container': params.id,
-                        'repo': params.repo
-                    }
+                        'tag': params.tag || null,
+                        'repo': params.repo || null
+                    },
+                    data: params.config
                 }).success(callback).error(function (data, status, headers, config) {
                     console.log(error, data);
                 });
@@ -92,7 +94,8 @@ angular.module('dockerui.services', ['ngResource'])
             insert: {method: 'POST', params: {id: '@id', action: 'insert'}},
             push: {method: 'POST', params: {id: '@id', action: 'push'}},
             tag: {method: 'POST', params: {id: '@id', action: 'tag', force: 0, repo: '@repo', tag: '@tag'}},
-            remove: {method: 'DELETE', params: {id: '@id'}, isArray: true}
+            remove: {method: 'DELETE', params: {id: '@id'}, isArray: true},
+            inspect: {method: 'GET', params: {id: '@id', action: 'json'}}
         });
     }])
     .factory('Version', ['$resource', 'Settings', function VersionFactory($resource, Settings) {
@@ -168,13 +171,13 @@ angular.module('dockerui.services', ['ngResource'])
             }
         };
     })
-    .factory('Messages', ['$rootScope', function MessagesFactory($rootScope) {
+    .factory('Messages', ['$rootScope', '$sanitize', function MessagesFactory($rootScope, $sanitize) {
         'use strict';
         return {
             send: function (title, text) {
                 $.gritter.add({
-                    title: title,
-                    text: text,
+                    title: $sanitize(title),
+                    text: $sanitize(text),
                     time: 2000,
                     before_open: function () {
                         if ($('.gritter-item-wrapper').length === 3) {
@@ -185,8 +188,8 @@ angular.module('dockerui.services', ['ngResource'])
             },
             error: function (title, text) {
                 $.gritter.add({
-                    title: title,
-                    text: text,
+                    title: $sanitize(title),
+                    text: $sanitize(text),
                     time: 10000,
                     before_open: function () {
                         if ($('.gritter-item-wrapper').length === 4) {

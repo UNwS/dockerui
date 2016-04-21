@@ -23,8 +23,12 @@ angular.module('dockerui', [
     'network',
     'networks',
     'volumes'])
-    .config(['$routeProvider', function ($routeProvider) {
+    .config(['$routeProvider', '$httpProvider', function ($routeProvider, $httpProvider) {
         'use strict';
+
+        $httpProvider.defaults.xsrfCookieName = 'csrfToken';
+        $httpProvider.defaults.xsrfHeaderName = 'X-CSRF-Token';
+
         $routeProvider.when('/', {
             templateUrl: 'app/components/dashboard/dashboard.html',
             controller: 'DashboardController'
@@ -67,9 +71,29 @@ angular.module('dockerui', [
             controller: 'EventsController'
         });
         $routeProvider.otherwise({redirectTo: '/'});
+
+        // The Docker API likes to return plaintext errors, this catches them and disp
+        $httpProvider.interceptors.push(function() {
+            return {
+                'response': function(response) {
+                    if (typeof(response.data) === 'string' && response.data.startsWith('Conflict.')) {
+                        $.gritter.add({
+                            title: 'Error',
+                            text: $('<div>').text(response.data).html(),
+                            time: 10000
+                        });
+                    }
+                    var csrfToken = response.headers('X-Csrf-Token');
+                    if (csrfToken) {
+                        document.cookie = 'csrfToken=' + csrfToken;
+                    }
+                    return response;
+                }
+            };
+        });
     }])
     // This is your docker url that the api will use to make requests
     // You need to set this to the api endpoint without the port i.e. http://192.168.1.9
     .constant('DOCKER_ENDPOINT', 'dockerapi')
     .constant('DOCKER_PORT', '') // Docker port, leave as an empty string if no port is requred.  If you have a port, prefix it with a ':' i.e. :4243
-    .constant('UI_VERSION', 'v0.9.0-beta');
+    .constant('UI_VERSION', 'v0.10.1-beta');

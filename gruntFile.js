@@ -24,13 +24,13 @@ module.exports = function (grunt) {
         'copy'
     ]);
     grunt.registerTask('release', [
-        'clean:all',
+        'clean:app',
         'if:binaryNotExist',
         'html2js',
         'uglify',
         'clean:tmpl',
-        'jshint',
-        'karma:unit',
+        //'jshint',
+        //'karma:unit',
         'concat:index',
         'recess:min',
         'copy'
@@ -153,6 +153,7 @@ module.exports = function (grunt) {
             },
             angular: {
                 src: ['bower_components/angular/angular.js',
+                    'bower_components/angular-sanitize/angular-sanitize.js',
                     'bower_components/angular-route/angular-route.js',
                     'bower_components/angular-resource/angular-resource.js',
                     'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
